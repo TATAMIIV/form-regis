@@ -21,28 +21,35 @@ func SendLineNotification(applicant *models.Applicant) error {
 	}
 
 	messageText := fmt.Sprintf(
-		"🔔 แจ้งเตือน: มีการส่งข้อมูลผู้สมัครใหม่\n\n"+
-			"👤 ชื่อ-นามสกุล: %s %s\n"+
-			"🪪 บัตรประชาชน: %s\n"+
-			"📘 พาสปอร์ต: %s\n"+
-			"📞 เบอร์โทร: %s\n"+
-			"💼 ตำแหน่งหลัก: %s\n"+
-			"💼 ตำแหน่งรอง: %s\n"+
-			"📍 สถานที่สอบ: %s\n"+
-			"🧑‍💼 ผู้ประสานงาน: %s\n"+
-			"👕 ไซส์เสื้อ: %s | 👖 กางเกง: %s | 👟 รองเท้า: %s\n"+
-			"💰 ความพร้อมเรื่องเงิน: %s\n"+
-			"📏 ส่วนสูง: %s ซม. | ⚖️ น้ำหนัก: %s กก. | 🎂 อายุ: %s ปี\n"+
-			"🚗 ใบขับขี่: %s\n"+
-			"🏎️ ทักษะการขับรถ: %s\n\n"+
-			"🚨 ผู้ติดต่อฉุกเฉิน:\n- %s (%s)\n- โทร: %s\n\n"+
-			"👨‍👩‍👦 ข้อมูลครอบครัว:\n- สถานภาพ: %s\n"+
-			"- บิดา: %s (เกิด: %s)\n"+
-			"- มารดา: %s (เกิด: %s)\n"+
-			"- คู่สมรส: %s (เกิด: %s)\n"+
-			"- บุตรคนที่ 1: %s (เกิด: %s)\n"+
-			"- บุตรคนที่ 2: %s (เกิด: %s)\n\n"+
-			"✅ ท่านสามารถตรวจสอบข้อมูลเต็มรูปแบบได้ในหน้าเว็บ Admin ครับ",
+		"[ระบบแจ้งเตือนการรับสมัครงาน]\n"+
+			"ได้รับข้อมูลผู้สมัครใหม่เรียบร้อยแล้ว\n\n"+
+			"--- ข้อมูลส่วนบุคคล ---\n"+
+			"ชื่อ-สกุล: %s %s\n"+
+			"เลขประจำตัวประชาชน: %s\n"+
+			"หนังสือเดินทาง: %s\n"+
+			"เบอร์โทรศัพท์: %s\n\n"+
+			"--- ข้อมูลการสมัคร ---\n"+
+			"ตำแหน่งที่สมัคร (หลัก): %s\n"+
+			"ตำแหน่งที่สมัคร (รอง): %s\n"+
+			"สถานที่สอบ: %s\n"+
+			"ผู้ประสานงาน: %s\n\n"+
+			"--- ข้อมูลทั่วไป ---\n"+
+			"ขนาดเครื่องแต่งกาย: เสื้อ %s | กางเกง %s | รองเท้า %s\n"+
+			"ความพร้อมทางการเงิน: %s\n"+
+			"ข้อมูลร่างกาย: ส่วนสูง %s ซม. | น้ำหนัก %s กก. | อายุ %s ปี\n"+
+			"ใบอนุญาตขับขี่: %s\n"+
+			"ทักษะการขับขี่: %s\n\n"+
+			"--- บุคคลที่ติดต่อได้ในกรณีฉุกเฉิน ---\n"+
+			"ชื่อ-สกุล: %s (%s)\n"+
+			"เบอร์โทรศัพท์: %s\n\n"+
+			"--- ข้อมูลครอบครัว ---\n"+
+			"สถานภาพ: %s\n"+
+			"บิดา: %s (ปีเกิด: %s)\n"+
+			"มารดา: %s (ปีเกิด: %s)\n"+
+			"คู่สมรส: %s (ปีเกิด: %s)\n"+
+			"บุตรลำดับที่ 1: %s (ปีเกิด: %s)\n"+
+			"บุตรลำดับที่ 2: %s (ปีเกิด: %s)\n\n"+
+			"หมายเหตุ: ท่านสามารถตรวจสอบรายละเอียดข้อมูลฉบับเต็มได้ผ่านระบบ Admin Dashboard",
 		applicant.FirstName, applicant.LastName,
 		applicant.IDCard,
 		func() string { if applicant.Passport == "" { return "-" }; return applicant.Passport }(),
@@ -114,3 +121,61 @@ func SendLineNotification(applicant *models.Applicant) error {
 
 	return nil
 }
+
+type LineQuotaResponse struct {
+	Usage int `json:"usage"`
+	Limit int `json:"limit"`
+}
+
+func GetLineQuota() (*LineQuotaResponse, error) {
+	token := strings.TrimSpace(os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"))
+	if token == "" {
+		return nil, errors.New("missing LINE token")
+	}
+
+	client := &http.Client{}
+	
+	// Get Usage
+	reqUsage, _ := http.NewRequest("GET", "https://api.line.me/v2/bot/message/quota/consumption", nil)
+	reqUsage.Header.Set("Authorization", "Bearer "+token)
+	respUsage, err := client.Do(reqUsage)
+	if err != nil {
+		return nil, err
+	}
+	defer respUsage.Body.Close()
+
+	var usageData struct {
+		TotalUsage int `json:"totalUsage"`
+	}
+	if respUsage.StatusCode == http.StatusOK {
+		json.NewDecoder(respUsage.Body).Decode(&usageData)
+	}
+
+	// Get Quota Limit
+	reqQuota, _ := http.NewRequest("GET", "https://api.line.me/v2/bot/message/quota", nil)
+	reqQuota.Header.Set("Authorization", "Bearer "+token)
+	respQuota, err := client.Do(reqQuota)
+	if err != nil {
+		return nil, err
+	}
+	defer respQuota.Body.Close()
+
+	var quotaData struct {
+		Type  string `json:"type"`
+		Value int    `json:"value"`
+	}
+	if respQuota.StatusCode == http.StatusOK {
+		json.NewDecoder(respQuota.Body).Decode(&quotaData)
+	}
+
+	limit := quotaData.Value
+	if quotaData.Type == "none" {
+		limit = -1 // Unlimited
+	}
+
+	return &LineQuotaResponse{
+		Usage: usageData.TotalUsage,
+		Limit: limit,
+	}, nil
+}
+

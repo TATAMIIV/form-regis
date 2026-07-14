@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/jirayusmmmm/form-regis/backend/config"
 	"github.com/jirayusmmmm/form-regis/backend/models"
 )
@@ -24,5 +26,11 @@ func Create(applicant *models.Applicant) error {
 
 func Update(applicant *models.Applicant) error {
 	result := config.DB.Save(applicant)
+	return result.Error
+}
+
+func UpdateLineSentStatus(idCard string) error {
+	now := time.Now()
+	result := config.DB.Model(&models.Applicant{}).Where("id_card = ?", idCard).Update("line_sent_at", &now)
 	return result.Error
 }

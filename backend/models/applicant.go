@@ -53,4 +53,5 @@ type Applicant struct {
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`
 	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
+	LineSentAt        *time.Time     `json:"line_sent_at"`
 }

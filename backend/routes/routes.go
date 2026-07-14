@@ -15,4 +15,5 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/applicants/:id_card", controllers.GetApplicantByIDCard)
 	api.Post("/applicants", controllers.SaveApplicant)
 	api.Post("/applicants/:id_card/send-line", controllers.SendLineNotification)
+	api.Get("/line/quota", controllers.GetQuota)
 }

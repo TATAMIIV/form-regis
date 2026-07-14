@@ -49,5 +49,13 @@ export const applicantService = {
       throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการส่งข้อมูลเข้า Line');
     }
     return response.json();
+  },
+
+  getLineQuota: async (): Promise<{usage: number, limit: number}> => {
+    const response = await fetch(`${API_URL}/api/line/quota`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch LINE quota');
+    }
+    return response.json();
   }
 };
