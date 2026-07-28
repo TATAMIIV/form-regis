@@ -47,6 +47,11 @@ func ConnectDB() {
 
 	log.Println("Connected to Database")
 	db.AutoMigrate(&models.Applicant{}, &models.Admin{})
+	
+	// Synchronize PostgreSQL primary key sequences to prevent SQLSTATE 23505 duplicate key errors
+	db.Exec("SELECT setval(pg_get_serial_sequence('applicants', 'id'), COALESCE((SELECT MAX(id) FROM applicants), 0) + 1, false)")
+	db.Exec("SELECT setval(pg_get_serial_sequence('admins', 'id'), COALESCE((SELECT MAX(id) FROM admins), 0) + 1, false)")
+
 	seedDefaultAdmin(db)
 	DB = db
 }

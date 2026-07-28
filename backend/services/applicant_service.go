@@ -44,12 +44,13 @@ func GetApplicantByIDCard(idCard string) (models.Applicant, error) {
 func SaveApplicant(applicant *models.Applicant) error {
 	var saveErr error
 	existing, err := repositories.FindByIDCard(applicant.IDCard)
-	if err == nil {
+	if err == nil && existing.ID > 0 {
 		// Exists, update it
 		applicant.ID = existing.ID
 		saveErr = repositories.Update(applicant)
 	} else {
-		// Does not exist, create new
+		// Does not exist, reset ID to 0 so GORM lets Postgres sequence generate new ID
+		applicant.ID = 0
 		saveErr = repositories.Create(applicant)
 	}
 
