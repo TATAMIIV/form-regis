@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Form, message } from 'antd';
 import dayjs from 'dayjs';
 import { type ApplicantData, step1Fields, step2Fields } from '../types/applicant';
 import { applicantService } from '../services/api';
+
+const DRAFT_KEY = 'applicant_form_draft';
 
 export const useRegistration = () => {
   const [form] = Form.useForm();
@@ -12,11 +14,44 @@ export const useRegistration = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isFetchingUser, setIsFetchingUser] = useState(false);
 
+  // Restore draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        const dobFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob'];
+        dobFields.forEach(field => {
+          if (parsed[field]) {
+            parsed[field] = dayjs(parsed[field]);
+          }
+        });
+        setFormData(parsed);
+        form.setFieldsValue(parsed);
+        message.info('ดึงข้อมูลร่างที่คุณกรอกไว้ล่าสุดให้อัตโนมัติ');
+      } catch (e) {
+        localStorage.removeItem(DRAFT_KEY);
+      }
+    }
+  }, [form]);
+
+  // Save draft to localStorage
+  const saveDraft = (newValues: Record<string, any>) => {
+    try {
+      const current = { ...formData, ...form.getFieldsValue(true), ...newValues };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(current));
+    } catch (e) {
+      console.error('Failed to save draft', e);
+    }
+  };
+
   const handleNext = async () => {
     try {
       const fieldsToValidate = currentStep === 0 ? step1Fields : step2Fields;
       await form.validateFields(fieldsToValidate);
-      setFormData({ ...formData, ...form.getFieldsValue(true) });
+      const updated = { ...formData, ...form.getFieldsValue(true) };
+      setFormData(updated);
+      saveDraft(updated);
       setCurrentStep(currentStep + 1);
     } catch (error) {
       message.error('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน');
@@ -65,6 +100,8 @@ export const useRegistration = () => {
       });
 
       form.setFieldsValue(parsedData);
+      setFormData(prev => ({ ...prev, ...parsedData }));
+      saveDraft(parsedData);
       message.success('พบข้อมูลในระบบ ทำการดึงข้อมูลสำเร็จ');
     } catch (e) {
       console.error(e);
@@ -77,10 +114,10 @@ export const useRegistration = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const finalData = { ...formData };
+      const finalData = { ...formData, ...form.getFieldsValue(true) };
 
       if (finalData.has_driving_license === 'มี') {
-        finalData.driving_license = `มี (${finalData.driving_license_years} ปี)`;
+        finalData.driving_license = `มี (${finalData.driving_license_years || '0'} ปี)`;
       } else {
         finalData.driving_license = 'ไม่มี';
       }
@@ -110,6 +147,7 @@ export const useRegistration = () => {
       });
 
       await applicantService.saveApplicant(finalData);
+      localStorage.removeItem(DRAFT_KEY);
       setIsSuccess(true);
     } catch (error: any) {
       message.error(error.message || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
@@ -119,6 +157,7 @@ export const useRegistration = () => {
   };
 
   const handleReset = () => {
+    localStorage.removeItem(DRAFT_KEY);
     setIsSuccess(false);
     setCurrentStep(0);
     form.resetFields();
@@ -136,6 +175,7 @@ export const useRegistration = () => {
     handlePrev,
     handleFetchUser,
     handleSubmit,
-    handleReset
+    handleReset,
+    saveDraft
   };
 };

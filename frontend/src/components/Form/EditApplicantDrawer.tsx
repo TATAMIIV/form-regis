@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, Form, Input, Button, Row, Col, Select, message, Space } from 'antd';
+import { Drawer, Form, Input, Button, Row, Col, message, Space } from 'antd';
 import { applicantService } from '../../services/api';
 import type { ApplicantData } from '../../types/applicant';
 

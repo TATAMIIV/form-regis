@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Layout, Typography, Table, Button, Modal, message, Card, Space, Row, Col, Progress, Input, Segmented, DatePicker } from 'antd';
-import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined } from '@ant-design/icons';
+import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined, LogoutOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import { useNavigate } from 'react-router-dom';
 
 dayjs.extend(isBetween);
-import { applicantService } from '../services/api';
+import { applicantService, adminAuthService } from '../services/api';
 import type { ApplicantData } from '../types/applicant';
 import ReviewStep from '../components/Form/ReviewStep';
 import EditApplicantDrawer from '../components/Form/EditApplicantDrawer';
@@ -14,12 +15,20 @@ const { Header, Content } = Layout;
 const { Title } = Typography;
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [applicants, setApplicants] = useState<ApplicantData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedApplicant, setSelectedApplicant] = useState<ApplicantData | null>(null);
   const [sendingLineMap, setSendingLineMap] = useState<Record<string, boolean>>({});
   const [lineQuota, setLineQuota] = useState<{usage: number, limit: number} | null>(null);
+
+  // Logout handler
+  const handleLogout = () => {
+    adminAuthService.logout();
+    message.info('ออกจากระบบแล้ว');
+    navigate('/admin/login', { replace: true });
+  };
   
   // Filters
   const [searchText, setSearchText] = useState('');
@@ -50,8 +59,13 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       const data = await applicantService.getAllApplicants();
       setApplicants(data);
-    } catch (error) {
-      message.error('ไม่สามารถดึงข้อมูลผู้สมัครได้');
+    } catch (error: any) {
+      if (error.message === 'UNAUTHORIZED') {
+        message.error('Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+        navigate('/admin/login', { replace: true });
+      } else {
+        message.error('ไม่สามารถดึงข้อมูลผู้สมัครได้');
+      }
     } finally {
       setLoading(false);
     }
@@ -244,8 +258,17 @@ const AdminDashboard: React.FC = () => {
     <Layout style={{ minHeight: '100vh', background: '#f5f5f5' }}>
       <Header style={{ padding: '0 24px', background: '#ffffff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Title level={4} style={{ color: '#1f1f1f', margin: 0, fontWeight: 600 }}>
-          ระบบจัดการข้อมูลผู้สมัคร
+          ระบบจัดการข้อมูลผู้สมัคร (HR Recruitment)
         </Title>
+        <Button
+          type="text"
+          danger
+          icon={<LogoutOutlined />}
+          onClick={handleLogout}
+          style={{ fontWeight: 500 }}
+        >
+          ออกจากระบบ
+        </Button>
       </Header>
       
       <Content style={{ padding: '24px' }}>

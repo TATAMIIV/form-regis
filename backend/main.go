@@ -20,9 +20,14 @@ func main() {
 
 	app := fiber.New()
 
+	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
+	if allowedOrigin == "" {
+		allowedOrigin = "*"
+	}
+
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowOrigins: allowedOrigin,
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
 	routes.SetupRoutes(app)

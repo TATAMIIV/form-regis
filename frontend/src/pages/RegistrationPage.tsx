@@ -21,7 +21,8 @@ const RegistrationPage: React.FC = () => {
     handlePrev,
     handleFetchUser,
     handleSubmit,
-    handleReset
+    handleReset,
+    saveDraft
   } = useRegistration();
 
   const steps = [
@@ -67,6 +68,7 @@ const RegistrationPage: React.FC = () => {
                   initialValues={formData}
                   size="large"
                   onValuesChange={(changedValues) => {
+                    saveDraft(changedValues);
                     if (changedValues.id_card) {
                       handleFetchUser(changedValues.id_card);
                     }
