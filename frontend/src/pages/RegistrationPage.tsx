@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Typography, Form, Button, Card, Steps } from 'antd';
+import { Layout, Typography, Form, Button, Card, Steps, Popconfirm } from 'antd';
 import { useRegistration } from '../hooks/useRegistration';
 import PersonalInfoStep from '../components/Form/PersonalInfoStep';
 import FamilyInfoStep from '../components/Form/FamilyInfoStep';
@@ -86,22 +86,39 @@ const RegistrationPage: React.FC = () => {
                     <ReviewStep formData={formData} />
                   </div>
 
-                  <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between' }}>
-                    {currentStep > 0 && (
-                      <Button style={{ margin: '0 8px' }} onClick={handlePrev}>
-                        ย้อนกลับ
-                      </Button>
-                    )}
-                    {currentStep < steps.length - 1 && (
-                      <Button type="primary" onClick={handleNext} style={{ marginLeft: 'auto' }}>
-                        ถัดไป
-                      </Button>
-                    )}
-                    {currentStep === steps.length - 1 && (
-                      <Button type="primary" onClick={handleSubmit} loading={loading} style={{ marginLeft: 'auto' }}>
-                        ยืนยันการส่งข้อมูล
-                      </Button>
-                    )}
+                  <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      {currentStep > 0 && (
+                        <Button style={{ marginRight: 8 }} onClick={handlePrev}>
+                          ย้อนกลับ
+                        </Button>
+                      )}
+                      <Popconfirm
+                        title="ยืนยันการล้างแบบร่าง"
+                        description="คุณต้องการลบข้อมูลที่กรอกค้างไว้ทั้งหมดเพื่อเริ่มใหม่ใช่หรือไม่?"
+                        onConfirm={handleReset}
+                        okText="ล้างข้อมูล"
+                        cancelText="ยกเลิก"
+                        okButtonProps={{ danger: true }}
+                      >
+                        <Button type="text" danger style={{ fontSize: 13 }}>
+                          ล้างข้อมูลแบบร่าง
+                        </Button>
+                      </Popconfirm>
+                    </div>
+
+                    <div>
+                      {currentStep < steps.length - 1 && (
+                        <Button type="primary" onClick={handleNext}>
+                          ถัดไป
+                        </Button>
+                      )}
+                      {currentStep === steps.length - 1 && (
+                        <Button type="primary" onClick={handleSubmit} loading={loading}>
+                          ยืนยันการส่งข้อมูล
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </Form>
               </>

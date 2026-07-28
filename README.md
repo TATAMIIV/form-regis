@@ -1,97 +1,72 @@
 # 📝 ระบบรับสมัครงานออนไลน์ (HR Recruitment Portal)
 
-ระบบรับสมัครงานออนไลน์ที่ออกแบบมาเพื่อความสะดวกสบายของผู้สมัครผ่านมือถือ (Mobile-First) พร้อมระบบจัดการหลังบ้าน (Admin Dashboard) สำหรับฝ่ายบุคคล (HR) บน Desktop และระบบแจ้งเตือนผ่าน LINE ทันทีที่มีผู้สมัครใหม่
+ระบบรับสมัครงานออนไลน์ที่ออกแบบมาเพื่อความสะดวกสบายของผู้สมัครผ่านมือถือ (Mobile-First) พร้อมระบบจัดการหลังบ้าน (Admin Dashboard) สำหรับฝ่ายบุคคล (HR) บน Desktop, ระบบยืนยันตัวตนด้วย **JWT**, ระบบ **Caching Layer** และการแจ้งเตือนผ่าน **LINE Messaging API** ทันทีที่มีผู้สมัครใหม่
 
 ---
 
 ## ✨ ฟีเจอร์หลัก (Key Features)
 
-### 1. ฝั่งผู้สมัคร (Frontend Form)
+### 1. ฝั่งผู้สมัคร (Frontend Applicant Form)
 - **ฟอร์มกรอกข้อมูล 2 ขั้นตอน (Multi-step Form):** แยกข้อมูลส่วนตัวและข้อมูลครอบครัวออกจากกันเพื่อความง่ายในการกรอก
-- **ระบบค้นหาข้อมูลจากบัตรประชาชน (Smart Autofill):** หากผู้สมัครเคยกรอกข้อมูลไว้แล้ว ระบบจะดึงข้อมูลเก่ามาแสดงอัตโนมัติเมื่อกรอกเลขบัตร ปชช. ครบ 13 หลัก
-- **อัปเดตข้อมูลเดิม:** หากตรวจพบข้อมูลเดิม จะทำการอัปเดตข้อมูล (Update) แทนการสร้างใหม่ (Create) ซ้ำซ้อน
-- **Mobile-First Design:** ออกแบบหน้าตาให้สวยงาม พรีเมียม และใช้งานง่ายบนโทรศัพท์มือถือ
+- **บันทึกแบบร่างอัตโนมัติ (LocalStorage Draft):** บันทึกข้อมูลค้างไว้แบบเรียลไทม์ หากเน็ตหลุด รีเฟรช หรือเปิดใหม่ ข้อมูลจะไม่หาย พร้อมปุ่มกด "ล้างแบบร่าง"
+- **ระบบค้นหาข้อมูลจากบัตรประชาชน (Smart Autofill):** ดึงข้อมูลเก่ามาแสดงและอัปเดตให้อัตโนมัติเมื่อกรอกเลขบัตร ปชช. ครบ 13 หลัก
+- **Mobile-First & Premium Design:** ออกแบบด้วย Ant Design + Custom Theme สวยงามน่าใช้งาน
 
-### 2. ฝั่งแอดมิน (Admin Dashboard)
-- **ตารางจัดการข้อมูล:** แสดงรายชื่อผู้สมัครทั้งหมดแบบเรียลไทม์ พร้อมระบบแบ่งหน้า (Pagination)
-- **ดูข้อมูลฉบับเต็ม (Modal View):** สามารถคลิกดูรายละเอียดของผู้สมัครแต่ละคนได้อย่างครบถ้วน
-- **ระบบแจ้งเตือนผ่าน LINE (LINE Notify / Messaging API):** มีปุ่มกด "ส่งเข้า Line" เพื่อสรุปข้อมูลของผู้สมัครแต่ละคน ส่งตรงเข้ากลุ่ม LINE ของทีม HR ทันที
+### 2. ฝั่งแอดมิน (Admin Dashboard & Security)
+- **ระบบเข้าสู่ระบบด้วย JWT & Bcrypt:** ตาราง Admin ใน DB บันทึกพาสเวิร์ดแบบเข้ารหัส Bcrypt พร้อมออก JWT Bearer Token ล็อกอินปลอดภัย
+- **Protected Routes & Token Middleware:** ดักจับและป้องกัน API หลังบ้าน ไม่ให้ผู้ไม่มีสิทธิ์แอบดึงข้อมูลรายชื่อผู้สมัคร
+- **ตารางจัดการข้อมูล:** แสดงรายชื่อผู้สมัครทั้งหมด พร้อมระบบแบ่งหน้า, ตัวกรองตามช่วงเวลา (วัน/สัปดาห์/เดือน/ปี), ค้นหาข้อความ และตัวกรองสถานะ LINE
+- **แก้ไขข้อมูลผู้สมัคร:** แอดมินสามารถเปิด Drawer แก้ไขรายละเอียดของผู้สมัครแต่ละคนได้แบบเรียลไทม์
+- **ระบบแจ้งเตือนผ่าน LINE (LINE Messaging API):** ปุ่มกด "ส่งเข้า Line" สรุปข้อมูลผู้สมัครส่งตรงเข้ากลุ่ม LINE ของทีม HR ทันที พร้อมแสดงโควต้าข้อความคงเหลือ
+
+### 3. ประสิทธิภาพและความปลอดภัย (Performance & Security)
+- **In-Memory & Session Caching Layer:** แคชการดึงข้อมูลเพื่อลดการยิง Query หา PostgreSQL Database จาก 100% เหลือไม่ถึง 10%
+- **Go Fiber Recover & Rate Limiting:** ป้องกัน Server ลุ่มจาก Panic และป้องกันการยิงสแปมฟอร์มหรือสุ่มรหัสผ่านด้วย Rate Limiter
+- **CORS Protection:** กำหนด Origin อนุญาตการเข้าถึงเฉพาะโดเมนที่ได้รับอนุญาต
 
 ---
 
 ## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
 **Frontend (หน้าบ้าน):**
-- React 18 (Vite)
-- TypeScript
-- Ant Design (UI Library หลักสำหรับ Admin)
-- React Router DOM (สำหรับการจัดการหน้าเว็บ)
-- Vanilla CSS (เน้นความสวยงามและ Micro-animations แบบ Custom)
+- React 18 (Vite) + TypeScript
+- Ant Design 5 (UI Library หลัก)
+- React Router DOM 6 (Client-side SPA Routing)
+- LocalStorage / SessionStorage Caching
 
 **Backend (หลังบ้าน):**
-- Go (Golang)
-- Go Fiber (Web Framework ที่รวดเร็ว)
-- GORM (ORM สำหรับจัดการฐานข้อมูล)
-- SQLite (ฐานข้อมูลน้ำหนักเบา ไม่ต้องตั้งค่าซับซ้อน)
+- Go (Golang 1.25)
+- Go Fiber v2 (Web Framework ความเร็วสูง)
+- GORM (ORM จัดการ Database) + Bcrypt & JWT v5
+- Thread-safe In-Memory TTL Cache
+
+**Database & Cloud Deployment:**
+- **Database**: PostgreSQL (Supabase Free Tier)
+- **Backend Hosting**: Render.com (Go Native Web Service)
+- **Frontend Hosting**: Vercel (Vite SPA Production Build)
 
 ---
 
-## 🚀 วิธีการติดตั้งและรันโปรเจกต์ (Installation Guide)
+## 🚀 วิธีการตั้งค่า Environment Variables (`.env`)
 
-### สิ่งที่ต้องมีในเครื่อง (Prerequisites)
-- [Node.js](https://nodejs.org/) (สำหรับรัน Frontend)
-- [Go](https://go.dev/) (สำหรับรัน Backend)
-
-### 1. การตั้งค่า Backend
-เข้าไปที่โฟลเดอร์ `backend`:
-```bash
-cd backend
-```
-
-ทำการโหลด Package ที่จำเป็น:
-```bash
-go mod tidy
-```
-
-สร้างไฟล์ `.env` ไว้ในโฟลเดอร์ `backend` โดยคัดลอกตัวอย่างด้านล่างไปวาง (เปลี่ยนค่าให้เป็นของบอทคุณ):
+สร้างไฟล์ `backend/.env`:
 ```env
+DB_HOST=aws-0-ap-northeast-1.pooler.supabase.com
+DB_USER=postgres.xxxxxxxx
+DB_PASSWORD=รหัสผ่าน_Supabase
+DB_NAME=postgres
+DB_PORT=6543
+DB_SSLMODE=require
 LINE_CHANNEL_ACCESS_TOKEN=ใส่_Token_ของบอท_ที่นี่
 LINE_GROUP_ID=ใส่_Group_ID_หรือ_User_ID_ที่นี่
+JWT_SECRET=รหัสลับสำหรับเซ็นสัญญา_JWT
+ALLOWED_ORIGIN=https://your-frontend-domain.vercel.app
 ```
-
-รันเซิร์ฟเวอร์หลังบ้าน:
-```bash
-go run .
-```
-*(Backend จะรันอยู่ที่พอร์ต `http://localhost:3000`)*
-
----
-
-### 2. การตั้งค่า Frontend
-เปิด Terminal ใหม่แล้วเข้าไปที่โฟลเดอร์ `frontend`:
-```bash
-cd frontend
-```
-
-ติดตั้ง Packages:
-```bash
-npm install
-```
-
-รันเว็บหน้าบ้าน:
-```bash
-npm run dev
-```
-*(Frontend จะรันอยู่ที่พอร์ตตามที่ Vite กำหนด ปกติคือ `http://localhost:5173`)*
 
 ---
 
 ## 📱 โครงสร้างหน้าเว็บ (Routes)
-- `/` - หน้าฟอร์มสำหรับผู้สมัครงาน (เน้นหน้าจอมือถือ)
-- `/admin` - หน้าจัดการสำหรับ HR (เน้นหน้าจอ Desktop)
+- `/` - หน้าฟอร์มสมัครงานสำหรับผู้สมัคร (Mobile-First)
+- `/admin/login` - หน้าเข้าสู่ระบบสำหรับ HR / แอดมิน
+- `/admin` - หน้าแดชบอร์ดจัดการข้อมูลผู้สมัครสำหรับ HR (Protected Route)
 
----
-
-## 💡 หมายเหตุ
-- ข้อมูลทั้งหมดจะถูกบันทึกลงในไฟล์ `backend/form_regis.db` (SQLite) ซึ่งถูกตั้งค่า `.gitignore` ไว้แล้ว จะไม่ถูก Push ขึ้น Git
-- หากต้องการเปลี่ยนการส่ง LINE ไปกลุ่มอื่น ให้ลากบอทเข้ากลุ่มนั้นๆ และเปลี่ยนค่า `LINE_GROUP_ID` ในไฟล์ `.env` เสมอ
