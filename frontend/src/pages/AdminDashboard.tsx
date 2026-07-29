@@ -254,122 +254,259 @@ const AdminDashboard: React.FC = () => {
     });
   }, [applicants, searchText, timeFilter, dateRange, lineStatusFilter]);
 
+  // Responsive Window Size Hook
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-      <Header style={{ padding: '0 24px', background: '#ffffff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Title level={4} style={{ color: '#1f1f1f', margin: 0, fontWeight: 600 }}>
-          ระบบจัดการข้อมูลผู้สมัคร (HR Recruitment)
+      <Header style={{ padding: isMobile ? '0 12px' : '0 24px', background: '#ffffff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Title level={4} style={{ color: '#1f1f1f', margin: 0, fontWeight: 600, fontSize: isMobile ? 15 : 18 }}>
+          {isMobile ? 'HR Recruitment' : 'ระบบจัดการข้อมูลผู้สมัคร (HR Recruitment)'}
         </Title>
         <Button
           type="text"
           danger
           icon={<LogoutOutlined />}
           onClick={handleLogout}
+          size={isMobile ? 'small' : 'middle'}
           style={{ fontWeight: 500 }}
         >
-          ออกจากระบบ
+          {isMobile ? 'ออก' : 'ออกจากระบบ'}
         </Button>
       </Header>
       
-      <Content style={{ padding: '24px' }}>
-        <Row gutter={24}>
-          <Col xs={24} lg={17}>
-            <Card 
-              bordered={false} 
-              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderRadius: 8, marginBottom: 24 }}
-              styles={{ body: { padding: 0 } }}
-            >
-              <div style={{ padding: '20px 24px', borderBottom: '1px solid #f0f0f0' }}>
-                <Row justify="space-between" align="middle" gutter={[16, 16]}>
-                  <Col>
-                    <Title level={5} style={{ margin: 0 }}>รายชื่อผู้สมัคร ({filteredApplicants.length} คน)</Title>
-                  </Col>
-                  <Col>
-                    <Space size="middle" wrap>
-                      <Segmented
-                        options={[
-                          { label: 'ทั้งหมด', value: 'all' },
-                          { label: 'ส่งแล้ว', value: 'sent' },
-                          { label: 'ยังไม่ส่ง', value: 'unsent' },
-                        ]}
-                        value={lineStatusFilter}
-                        onChange={(val) => setLineStatusFilter(val as string)}
-                      />
-                      <Segmented
-                        options={[
-                          { label: 'ทั้งหมด', value: 'all' },
-                          { label: 'วันนี้', value: 'today' },
-                          { label: 'สัปดาห์นี้', value: 'week' },
-                          { label: 'เดือนนี้', value: 'month' },
-                          { label: 'ปีนี้', value: 'year' },
-                          { label: 'กำหนดเอง', value: 'custom' },
-                        ]}
-                        value={timeFilter}
-                        onChange={(val) => setTimeFilter(val as string)}
-                      />
-                      {timeFilter === 'custom' && (
-                        <DatePicker.RangePicker 
-                          onChange={(dates: any) => setDateRange(dates)}
-                          style={{ borderRadius: 6 }}
-                        />
-                      )}
-                      <Input
-                        placeholder="ค้นหาชื่อ, บัตร, เบอร์, ตำแหน่ง..."
-                        prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-                        allowClear
-                        value={searchText}
-                        onChange={(e) => setSearchText(e.target.value)}
-                        style={{ width: 250, borderRadius: 6 }}
-                      />
-                    </Space>
-                  </Col>
-                </Row>
-              </div>
-              
-              <Table 
-                columns={columns} 
-                dataSource={filteredApplicants} 
-                rowKey="id_card" 
-                loading={loading}
-                scroll={{ x: 800 }}
-                pagination={{ pageSize: 10 }}
-                style={{ padding: '0 12px 12px 12px' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} lg={7}>
-            {lineQuota && (
+      <Content style={{ padding: isMobile ? '12px' : '24px' }}>
+        <Row gutter={[16, 16]}>
+          {/* QUOTA CARD FIRST ON MOBILE */}
+          {isMobile && lineQuota && (
+            <Col xs={24}>
               <Card 
                 bordered={true} 
                 style={{ 
                   borderRadius: 8,
                   background: '#ffffff',
                   borderColor: '#f0f0f0',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.04)',
+                  marginBottom: 8
                 }}
+                styles={{ body: { padding: 12 } }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <Typography.Text type="secondary" style={{ fontSize: 14 }}>โควต้าส่ง LINE (เดือนนี้)</Typography.Text>
-                    <Title level={3} style={{ color: '#1f1f1f', margin: '4px 0 0 0' }}>
-                      {lineQuota.usage} <span style={{ fontSize: 16, fontWeight: 'normal', color: '#8c8c8c' }}>/ {lineQuota.limit === -1 ? '∞' : lineQuota.limit} ครั้ง</span>
+                    <Typography.Text type="secondary" style={{ fontSize: 13 }}>โควต้าส่ง LINE (เดือนนี้)</Typography.Text>
+                    <Title level={4} style={{ color: '#1f1f1f', margin: '2px 0 0 0' }}>
+                      {lineQuota.usage} <span style={{ fontSize: 14, fontWeight: 'normal', color: '#8c8c8c' }}>/ {lineQuota.limit === -1 ? '∞' : lineQuota.limit} ครั้ง</span>
                     </Title>
                   </div>
-                  <MessageOutlined style={{ fontSize: 32, color: '#d9d9d9' }} />
+                  <MessageOutlined style={{ fontSize: 24, color: '#00B900' }} />
                 </div>
-                {lineQuota.limit > 0 && (
-                  <Progress 
-                    percent={Math.round((lineQuota.usage / lineQuota.limit) * 100)} 
-                    showInfo={false}
-                    strokeColor="#8c8c8c"
-                    trailColor="#f5f5f5"
-                    size="small"
-                    style={{ marginTop: 16 }}
-                  />
-                )}
               </Card>
-            )}
+            </Col>
+          )}
+
+          <Col xs={24} lg={17}>
+            <Card 
+              bordered={false} 
+              style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)', borderRadius: 8, marginBottom: 16 }}
+              styles={{ body: { padding: isMobile ? '12px' : 0 } }}
+            >
+              <div style={{ padding: isMobile ? '8px 0' : '20px 24px', borderBottom: isMobile ? 'none' : '1px solid #f0f0f0' }}>
+                <Row justify="space-between" align="middle" gutter={[12, 12]}>
+                  <Col xs={24} sm={12}>
+                    <Title level={5} style={{ margin: 0 }}>รายชื่อผู้สมัคร ({filteredApplicants.length} คน)</Title>
+                  </Col>
+                  <Col xs={24}>
+                    <Input
+                      placeholder="ค้นหาชื่อ, บัตร, เบอร์, ตำแหน่ง..."
+                      prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+                      allowClear
+                      value={searchText}
+                      onChange={(e) => setSearchText(e.target.value)}
+                      style={{ width: '100%', borderRadius: 6, marginBottom: 12 }}
+                    />
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <Segmented
+                          options={[
+                            { label: 'ทั้งหมด', value: 'all' },
+                            { label: 'ส่งแล้ว', value: 'sent' },
+                            { label: 'ยังไม่ส่ง', value: 'unsent' },
+                          ]}
+                          value={lineStatusFilter}
+                          onChange={(val) => setLineStatusFilter(val as string)}
+                          size={isMobile ? 'small' : 'middle'}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', overflowX: 'auto' }}>
+                        <Segmented
+                          options={[
+                            { label: 'ทั้งหมด', value: 'all' },
+                            { label: 'วันนี้', value: 'today' },
+                            { label: 'สัปดาห์นี้', value: 'week' },
+                            { label: 'เดือนนี้', value: 'month' },
+                            { label: 'ปีนี้', value: 'year' },
+                            { label: 'กำหนดเอง', value: 'custom' },
+                          ]}
+                          value={timeFilter}
+                          onChange={(val) => setTimeFilter(val as string)}
+                          size={isMobile ? 'small' : 'middle'}
+                        />
+                      </div>
+                      {timeFilter === 'custom' && (
+                        <DatePicker.RangePicker 
+                          onChange={(dates: any) => setDateRange(dates)}
+                          style={{ borderRadius: 6, width: '100%' }}
+                        />
+                      )}
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+              
+              {/* DESKTOP TABLE VIEW */}
+              {!isMobile ? (
+                <Table 
+                  columns={columns} 
+                  dataSource={filteredApplicants} 
+                  rowKey="id_card" 
+                  loading={loading}
+                  scroll={{ x: 800 }}
+                  pagination={{ pageSize: 10 }}
+                  style={{ padding: '0 12px 12px 12px' }}
+                />
+              ) : (
+                /* MOBILE CARD LIST VIEW */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
+                  {loading ? (
+                    <Card loading />
+                  ) : filteredApplicants.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 24, color: '#8c8c8c' }}>ไม่พบข้อมูลผู้สมัคร</div>
+                  ) : (
+                    filteredApplicants.map((record) => {
+                      const isSent = !!record.line_sent_at;
+                      const sentTime = isSent ? new Date(record.line_sent_at!).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '';
+                      return (
+                        <Card 
+                          key={record.id_card}
+                          size="small"
+                          style={{ borderRadius: 8, borderColor: '#e8e8e8', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                            <div>
+                              <Typography.Text strong style={{ fontSize: 16 }}>{record.first_name} {record.last_name}</Typography.Text>
+                              <div style={{ fontSize: 13, color: '#666' }}>เลขบัตร: {record.id_card}</div>
+                            </div>
+                            <span style={{ 
+                              fontSize: 12, 
+                              padding: '2px 8px', 
+                              borderRadius: 12, 
+                              background: isSent ? '#F6FFED' : '#FFF7E6',
+                              color: isSent ? '#52C41A' : '#FA8C16',
+                              border: `1px solid ${isSent ? '#B7EB8F' : '#FFD591'}` 
+                            }}>
+                              {isSent ? `ส่งแล้ว (${sentTime})` : 'ยังไม่ส่ง LINE'}
+                            </span>
+                          </div>
+
+                          <div style={{ fontSize: 13, color: '#444', marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <div>📞 <strong>เบอร์โทร:</strong> {record.phone || '-'}</div>
+                            <div>💼 <strong>ตำแหน่ง:</strong> {record.position || '-'}</div>
+                            <div>📍 <strong>สถานที่สอบ:</strong> {record.exam_date_province || '-'}</div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 8, borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
+                            <Button 
+                              type="default" 
+                              icon={<EyeOutlined />} 
+                              onClick={() => showDetails(record)}
+                              size="small"
+                              style={{ flex: 1, borderRadius: 6, color: '#1890ff', borderColor: '#91d5ff' }}
+                            >
+                              ดูรายละเอียด
+                            </Button>
+                            <Button 
+                              type="default" 
+                              icon={<EditOutlined />} 
+                              onClick={() => handleEdit(record)}
+                              size="small"
+                              style={{ flex: 1, borderRadius: 6 }}
+                            >
+                              แก้ไข
+                            </Button>
+                            {!isSent ? (
+                              <Button 
+                                type="primary" 
+                                icon={<MessageOutlined />} 
+                                onClick={() => handleSendToLine(record)}
+                                size="small"
+                                loading={sendingLineMap[record.id_card]}
+                                style={{ flex: 1, borderRadius: 6, background: '#00B900', borderColor: '#00B900' }}
+                              >
+                                ส่ง LINE
+                              </Button>
+                            ) : (
+                              <Button 
+                                disabled
+                                icon={<CheckCircleOutlined />} 
+                                size="small"
+                                style={{ flex: 1, borderRadius: 6 }}
+                              >
+                                ส่งแล้ว
+                              </Button>
+                            )}
+                          </div>
+                        </Card>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </Card>
           </Col>
+
+          {/* DESKTOP QUOTA CARD */}
+          {!isMobile && (
+            <Col xs={24} lg={7}>
+              {lineQuota && (
+                <Card 
+                  bordered={true} 
+                  style={{ 
+                    borderRadius: 8,
+                    background: '#ffffff',
+                    borderColor: '#f0f0f0',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <Typography.Text type="secondary" style={{ fontSize: 14 }}>โควต้าส่ง LINE (เดือนนี้)</Typography.Text>
+                      <Title level={3} style={{ color: '#1f1f1f', margin: '4px 0 0 0' }}>
+                        {lineQuota.usage} <span style={{ fontSize: 16, fontWeight: 'normal', color: '#8c8c8c' }}>/ {lineQuota.limit === -1 ? '∞' : lineQuota.limit} ครั้ง</span>
+                      </Title>
+                    </div>
+                    <MessageOutlined style={{ fontSize: 32, color: '#d9d9d9' }} />
+                  </div>
+                  {lineQuota.limit > 0 && (
+                    <Progress 
+                      percent={Math.round((lineQuota.usage / lineQuota.limit) * 100)} 
+                      showInfo={false}
+                      strokeColor="#8c8c8c"
+                      trailColor="#f5f5f5"
+                      size="small"
+                      style={{ marginTop: 16 }}
+                    />
+                  )}
+                </Card>
+              )}
+            </Col>
+          )}
         </Row>
       </Content>
 
@@ -383,6 +520,8 @@ const AdminDashboard: React.FC = () => {
           </Button>
         ]}
         width={800}
+        style={{ maxWidth: '95vw', top: 16 }}
+        styles={{ body: { padding: isMobile ? 8 : 16, maxHeight: '80vh', overflowY: 'auto' } }}
       >
         {selectedApplicant && <ReviewStep formData={selectedApplicant} />}
       </Modal>
