@@ -12,6 +12,32 @@ import (
 	"github.com/jirayusmmmm/form-regis/backend/models"
 )
 
+func formatFamilyMember(nameTH, nameEN, dob string) string {
+	th := strings.TrimSpace(nameTH)
+	en := strings.TrimSpace(nameEN)
+	d := strings.TrimSpace(dob)
+
+	isTHValid := th != "" && th != "-" && th != "ไม่ระบุ"
+	isENValid := en != "" && en != "-" && en != "ไม่ระบุ"
+
+	var nameStr string
+	if isTHValid && isENValid {
+		nameStr = fmt.Sprintf("%s (%s)", th, en)
+	} else if isTHValid {
+		nameStr = th
+	} else if isENValid {
+		nameStr = en
+	} else {
+		nameStr = "ไม่ระบุ"
+	}
+
+	if d == "" {
+		d = "ไม่ระบุ"
+	}
+
+	return fmt.Sprintf("%s (ปีเกิด: %s)", nameStr, d)
+}
+
 func SendLineNotification(applicant *models.Applicant) error {
 	token := strings.TrimSpace(os.Getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 	groupID := strings.TrimSpace(os.Getenv("LINE_GROUP_ID"))
@@ -44,11 +70,11 @@ func SendLineNotification(applicant *models.Applicant) error {
 			"เบอร์โทรศัพท์: %s\n\n"+
 			"--- ข้อมูลครอบครัว ---\n"+
 			"สถานภาพ: %s\n"+
-			"บิดา: %s (ปีเกิด: %s)\n"+
-			"มารดา: %s (ปีเกิด: %s)\n"+
-			"คู่สมรส: %s (ปีเกิด: %s)\n"+
-			"บุตรลำดับที่ 1: %s (ปีเกิด: %s)\n"+
-			"บุตรลำดับที่ 2: %s (ปีเกิด: %s)\n\n"+
+			"บิดา: %s\n"+
+			"มารดา: %s\n"+
+			"คู่สมรส: %s\n"+
+			"บุตรลำดับที่ 1: %s\n"+
+			"บุตรลำดับที่ 2: %s\n\n"+
 			"หมายเหตุ: ท่านสามารถตรวจสอบรายละเอียดข้อมูลฉบับเต็มได้ผ่านระบบ Admin Dashboard",
 		applicant.FirstName, applicant.LastName,
 		applicant.IDCard,
@@ -71,16 +97,11 @@ func SendLineNotification(applicant *models.Applicant) error {
 		func() string { if applicant.EmergencyRelation == "" { return "-" }; return applicant.EmergencyRelation }(),
 		func() string { if applicant.EmergencyPhone == "" { return "-" }; return applicant.EmergencyPhone }(),
 		func() string { if applicant.MaritalStatus == "" { return "-" }; return applicant.MaritalStatus }(),
-		func() string { if applicant.FatherNameTH == "" { return "-" }; return applicant.FatherNameTH }(),
-		func() string { if applicant.FatherDOB == "" { return "-" }; return applicant.FatherDOB }(),
-		func() string { if applicant.MotherNameTH == "" { return "-" }; return applicant.MotherNameTH }(),
-		func() string { if applicant.MotherDOB == "" { return "-" }; return applicant.MotherDOB }(),
-		func() string { if applicant.SpouseNameTH == "" { return "-" }; return applicant.SpouseNameTH }(),
-		func() string { if applicant.SpouseDOB == "" { return "-" }; return applicant.SpouseDOB }(),
-		func() string { if applicant.Child1NameTH == "" { return "-" }; return applicant.Child1NameTH }(),
-		func() string { if applicant.Child1DOB == "" { return "-" }; return applicant.Child1DOB }(),
-		func() string { if applicant.Child2NameTH == "" { return "-" }; return applicant.Child2NameTH }(),
-		func() string { if applicant.Child2DOB == "" { return "-" }; return applicant.Child2DOB }(),
+		formatFamilyMember(applicant.FatherNameTH, applicant.FatherNameEN, applicant.FatherDOB),
+		formatFamilyMember(applicant.MotherNameTH, applicant.MotherNameEN, applicant.MotherDOB),
+		formatFamilyMember(applicant.SpouseNameTH, applicant.SpouseNameEN, applicant.SpouseDOB),
+		formatFamilyMember(applicant.Child1NameTH, applicant.Child1NameEN, applicant.Child1DOB),
+		formatFamilyMember(applicant.Child2NameTH, applicant.Child2NameEN, applicant.Child2DOB),
 	)
 
 	payload := map[string]interface{}{
