@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Layout, Typography, Table, Button, Modal, message, Card, Space, Row, Col, Progress, Input, Segmented, DatePicker } from 'antd';
-import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined, LogoutOutlined } from '@ant-design/icons';
+import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined, LogoutOutlined, CopyOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { useNavigate } from 'react-router-dom';
@@ -122,6 +122,48 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleCopyToLine = (record: ApplicantData) => {
+    const text = `[ระบบแจ้งเตือนการรับสมัครงาน]
+ได้รับข้อมูลผู้สมัครใหม่เรียบร้อยแล้ว
+
+--- ข้อมูลส่วนบุคคล ---
+ชื่อ-สกุล: ${record.first_name || ''} ${record.last_name || ''}
+เลขประจำตัวประชาชน: ${record.id_card || ''}
+หนังสือเดินทาง: ${record.passport || 'ไม่ระบุ'}
+เบอร์โทรศัพท์: ${record.phone || ''}
+
+--- ข้อมูลการสมัคร ---
+ตำแหน่งที่สมัคร (หลัก): ${record.position || ''}
+ตำแหน่งที่สมัคร (รอง): ${record.position2 || 'ไม่ระบุ'}
+สถานที่สอบ: ${record.exam_date_province || ''}
+ผู้ประสานงาน: ${record.coordinator || 'ไม่ระบุ'}
+
+--- ข้อมูลทั่วไป ---
+ขนาดเครื่องแต่งกาย: เสื้อ ${record.shirt_size || ''} | กางเกง ${record.pants_size || ''} | รองเท้า ${record.shoe_size || ''}
+ความพร้อมทางการเงิน: ${record.financial_ready || 'ไม่ระบุ'}
+ข้อมูลร่างกาย: ส่วนสูง ${record.height || ''} ซม. | น้ำหนัก ${record.weight || ''} กก. | อายุ ${record.age || ''} ปี
+ใบอนุญาตขับขี่: ${record.has_driving_license ? `มี (${record.driving_license_years || 0} ปี)` : 'ไม่มี'}
+ทักษะการขับขี่: ${Array.isArray(record.driving_skills) ? record.driving_skills.join(', ') : (record.driving_skills || 'ไม่ระบุ')}
+
+--- บุคคลที่ติดต่อได้ในกรณีฉุกเฉิน ---
+ชื่อ-สกุล: ${record.emergency_contact || ''} (${record.emergency_relation || ''})
+เบอร์โทรศัพท์: ${record.emergency_phone || ''}
+
+--- ข้อมูลครอบครัว ---
+สถานภาพ: ${record.marital_status || ''}
+บิดา: ${record.father_name_th || ''} (${record.father_name_en || ''}) (ปีเกิด: ${record.father_dob || 'ไม่ระบุ'})
+มารดา: ${record.mother_name_th || ''} (${record.mother_name_en || ''}) (ปีเกิด: ${record.mother_dob || 'ไม่ระบุ'})
+คู่สมรส: ${record.spouse_name_th || 'ไม่ระบุ'} (${record.spouse_name_en || 'ไม่ระบุ'}) (ปีเกิด: ${record.spouse_dob || 'ไม่ระบุ'})
+บุตรลำดับที่ 1: ${record.child1_name_th || 'ไม่ระบุ'} (ปีเกิด: ${record.child1_dob || 'ไม่ระบุ'})
+บุตรลำดับที่ 2: ${record.child2_name_th || 'ไม่ระบุ'} (ปีเกิด: ${record.child2_dob || 'ไม่ระบุ'})
+
+หมายเหตุ: ท่านสามารถตรวจสอบรายละเอียดข้อมูลฉบับเต็มได้ผ่านระบบ Admin Dashboard`;
+
+    navigator.clipboard.writeText(text)
+      .then(() => message.success('คัดลอกข้อความสำเร็จ สามารถนำไปวางใน LINE ได้เลย'))
+      .catch(() => message.error('คัดลอกข้อความไม่สำเร็จ'));
+  };
+
   const columns = [
     {
       title: 'เลขบัตรประชาชน',
@@ -200,6 +242,16 @@ const AdminDashboard: React.FC = () => {
                 ส่ง
               </Button>
             )}
+            <Button
+              type="text"
+              icon={<CopyOutlined />}
+              onClick={() => handleCopyToLine(record)}
+              size="small"
+              style={{ color: '#faad14' }}
+              title="คัดลอก"
+            >
+              คัดลอก
+            </Button>
           </Space>
         );
       },
@@ -461,6 +513,15 @@ const AdminDashboard: React.FC = () => {
                                 ส่งแล้ว
                               </Button>
                             )}
+                            <Button 
+                              type="default" 
+                              icon={<CopyOutlined />} 
+                              onClick={() => handleCopyToLine(record)}
+                              size="small"
+                              style={{ flex: 1, borderRadius: 6, color: '#faad14', borderColor: '#ffe58f', background: '#fffbe6' }}
+                            >
+                              คัดลอก
+                            </Button>
                           </div>
                         </Card>
                       );
