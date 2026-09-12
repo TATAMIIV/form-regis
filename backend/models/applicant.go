@@ -19,6 +19,7 @@ type Applicant struct {
 	Position          string         `json:"position"`
 	Position2         string         `json:"position2"`
 	ExamDateProvince  string         `json:"exam_date_province"`
+	ExamDate          string         `json:"exam_date"` // วันที่สอบ (เก็บเป็นรูปแบบ DD/MM/YYYY)
 	ShirtSize         string         `json:"shirt_size"`
 	PantsSize         string         `json:"pants_size"`
 	ShoeSize          string         `json:"shoe_size"`

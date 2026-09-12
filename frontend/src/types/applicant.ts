@@ -4,7 +4,7 @@ export interface ApplicantData {
 
 export const step1Fields = [
   'first_name', 'last_name', 'id_card', 'passport', 'coordinator', 
-  'phone', 'position', 'position2', 'exam_date_province', 
+  'phone', 'position', 'position2', 'exam_date_province', 'exam_date',
   'shirt_size', 'pants_size', 'shoe_size', 'financial_ready', 
   'height', 'weight', 'age', 'has_driving_license', 'driving_license_years', 
   'driving_skills', 'emergency_contact', 'emergency_phone', 'emergency_relation'

@@ -42,7 +42,11 @@ export const adminAuthService = {
 };
 
 export const applicantService = {
-  getAllApplicants: async (): Promise<ApplicantData[]> => {
+  getAllApplicants: async (forceRefresh = false): Promise<ApplicantData[]> => {
+    if (forceRefresh) {
+      sessionStorage.removeItem('admin_applicants_cache');
+    }
+
     // Try reading from sessionStorage cache first
     const cached = sessionStorage.getItem('admin_applicants_cache');
     if (cached) {

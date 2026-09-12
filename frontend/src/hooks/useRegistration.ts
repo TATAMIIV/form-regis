@@ -20,8 +20,9 @@ export const useRegistration = () => {
     if (savedDraft) {
       try {
         const parsed = JSON.parse(savedDraft);
-        const dobFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob'];
-        dobFields.forEach(field => {
+        // แปลงสตริงวันที่กลับเป็น Dayjs เพื่อให้ DatePicker แสดงผลถูกต้อง
+        const dateFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob', 'exam_date'];
+        dateFields.forEach(field => {
           if (parsed[field]) {
             parsed[field] = dayjs(parsed[field]);
           }
@@ -90,9 +91,10 @@ export const useRegistration = () => {
         parsedData.has_driving_license = 'ไม่มี';
       }
 
-      const dobFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob'];
-      dobFields.forEach(field => {
-        if (parsedData[field] && parsedData[field] !== 'ไม่ระบุ') {
+      // แปลงสตริงวันที่จากฐานข้อมูลกลับเป็น Dayjs สำหรับ DatePicker ถ้าไม่มีข้อมูลให้เป็น undefined
+      const dateFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob', 'exam_date'];
+      dateFields.forEach(field => {
+        if (parsedData[field] && parsedData[field] !== 'ไม่ระบุ' && parsedData[field] !== '-') {
           parsedData[field] = dayjs(parsedData[field], 'DD/MM/YYYY');
         } else {
           parsedData[field] = undefined;
@@ -139,8 +141,9 @@ export const useRegistration = () => {
         }
       });
 
-      const dobFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob'];
-      dobFields.forEach(field => {
+      // แปลงค่า Dayjs จาก DatePicker ให้เป็นสตริง DD/MM/YYYY ป้องกัน error ตอนส่งไปหลังบ้าน
+      const dateFields = ['father_dob', 'mother_dob', 'spouse_dob', 'child1_dob', 'child2_dob', 'exam_date'];
+      dateFields.forEach(field => {
         if (finalData[field] && typeof finalData[field].format === 'function') {
           finalData[field] = finalData[field].format('DD/MM/YYYY');
         }

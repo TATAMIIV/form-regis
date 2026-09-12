@@ -58,6 +58,7 @@ func SendLineNotification(applicant *models.Applicant) error {
 			"ตำแหน่งที่สมัคร (หลัก): %s\n"+
 			"ตำแหน่งที่สมัคร (รอง): %s\n"+
 			"สถานที่สอบ: %s\n"+
+			"วันที่สอบ: %s\n"+
 			"ผู้ประสานงาน: %s\n\n"+
 			"--- ข้อมูลทั่วไป ---\n"+
 			"ขนาดเครื่องแต่งกาย: เสื้อ %s | กางเกง %s | รองเท้า %s\n"+
@@ -83,6 +84,8 @@ func SendLineNotification(applicant *models.Applicant) error {
 		applicant.Position,
 		func() string { if applicant.Position2 == "" { return "-" }; return applicant.Position2 }(),
 		applicant.ExamDateProvince,
+		// ถ้าวันที่สอบว่าง ให้ใส่เป็นเครื่องหมายขีด (-) ป้องกันข้อความแหว่ง
+		func() string { if applicant.ExamDate == "" { return "-" }; return applicant.ExamDate }(),
 		func() string { if applicant.Coordinator == "" { return "-" }; return applicant.Coordinator }(),
 		func() string { if applicant.ShirtSize == "" { return "-" }; return applicant.ShirtSize }(),
 		func() string { if applicant.PantsSize == "" { return "-" }; return applicant.PantsSize }(),

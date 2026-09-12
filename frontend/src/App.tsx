@@ -5,10 +5,18 @@ import AdminDashboard from './pages/AdminDashboard';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { ConfigProvider } from 'antd';
+// นำเข้าโมดูลภาษาไทยสำหรับ Ant Design และ Dayjs
+import thTH from 'antd/locale/th_TH';
+import dayjs from 'dayjs';
+import 'dayjs/locale/th';
+
+// ตั้งค่า locale ภาษาไทยให้ Dayjs ทั้งหมดเพื่อแสดงชื่อเดือน/วัน/ปฏิทินเป็นภาษาไทย
+dayjs.locale('th');
 
 const App: React.FC = () => {
   return (
     <ConfigProvider
+      locale={thTH}
       theme={{
         token: {
           colorPrimary: '#6B7280',

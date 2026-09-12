@@ -1,6 +1,7 @@
 import React from 'react';
-import { Form, Input, Select, Radio, Typography, Spin } from 'antd';
+import { Form, Input, Select, Radio, Typography, Spin, DatePicker } from 'antd';
 import { UserOutlined, IdcardOutlined, PhoneOutlined } from '@ant-design/icons';
+import { THAI_PROVINCES } from '../../constants/provinces';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -24,8 +25,8 @@ const PersonalInfoStep: React.FC<Props> = ({ isFetchingUser }) => (
       <Input placeholder="เลขบัตร 13 หลัก" maxLength={13} suffix={isFetchingUser ? <Spin size="small" /> : <IdcardOutlined style={{ color: '#9CA3AF' }} />} />
     </Form.Item>
 
-    <Form.Item name="passport" label="เลข Passport" rules={[{ required: true, message: 'ระบุเลข Passport (หากไม่มีให้ใส่ "ไม่มี")' }]}>
-      <Input placeholder="เลข Passport" />
+    <Form.Item name="passport" label="เลขหนังสือเดินทาง (Passport)" rules={[{ required: true, message: 'ระบุเลขหนังสือเดินทาง (หากไม่มีให้ใส่ "ไม่มี")' }]}>
+      <Input placeholder="เลขหนังสือเดินทาง (หากไม่มีให้ใส่ 'ไม่มี')" />
     </Form.Item>
 
     <Form.Item name="coordinator" label="สาย/ผู้ดูแล" initialValue="เล็ก/พี่กร">
@@ -37,7 +38,7 @@ const PersonalInfoStep: React.FC<Props> = ({ isFetchingUser }) => (
       { len: 10, message: 'เบอร์โทรศัพท์ต้องมี 10 หลัก' },
       { pattern: /^[0-9]+$/, message: 'กรุณากรอกเฉพาะตัวเลข' }
     ]}>
-      <Input placeholder="08XXXXXXXX" maxLength={10} prefix={<PhoneOutlined style={{ color: '#9CA3AF' }} />} />
+      <Input placeholder="08XXXXXXXX (10 หลัก)" maxLength={10} prefix={<PhoneOutlined style={{ color: '#9CA3AF' }} />} />
     </Form.Item>
 
     <Form.Item name="position" label="ตำแหน่งงานหลัก" rules={[{ required: true, message: 'เลือกตำแหน่งงานหลัก' }]}>
@@ -70,8 +71,28 @@ const PersonalInfoStep: React.FC<Props> = ({ isFetchingUser }) => (
       </Select>
     </Form.Item>
 
-    <Form.Item name="exam_date_province" label="สถานที่สอบ" rules={[{ required: true, message: 'ระบุสถานที่สอบ' }]}>
-      <Input placeholder="จังหวัด" />
+    {/* ปรับเป็น Dropdown แสดงจังหวัดทั้งหมด 77 จังหวัด และพิมพ์ค้นหาในช่องเดียวกันได้ */}
+    <Form.Item name="exam_date_province" label="สถานที่สอบ" rules={[{ required: true, message: 'กรุณาเลือกสถานที่สอบ' }]}>
+      <Select
+        showSearch
+        placeholder="เลือกหรือพิมพ์ค้นหาจังหวัดที่ต้องการสอบ"
+        optionFilterProp="children"
+        filterOption={(input, option) =>
+          String(option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+        }
+        allowClear
+      >
+        {THAI_PROVINCES.map((province) => (
+          <Option key={province} value={province}>
+            {province}
+          </Option>
+        ))}
+      </Select>
+    </Form.Item>
+
+    {/* เพิ่ม input วันที่สอบ ต่อจากสถานที่สอบตามที่ต้องการ */}
+    <Form.Item name="exam_date" label="วันที่สอบ" rules={[{ required: true, message: 'ระบุวันที่สอบ' }]}>
+      <DatePicker format="DD/MM/YYYY" placeholder="เลือกวันที่สอบ" style={{ width: '100%' }} />
     </Form.Item>
 
     <div style={{ display: 'flex', gap: 10 }}>

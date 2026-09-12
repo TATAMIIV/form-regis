@@ -16,6 +16,12 @@ const ReviewStep: React.FC<Props> = ({ formData }) => (
     <Descriptions.Item label="ตำแหน่งรอง">{formData.position2 || '-'}</Descriptions.Item>
     <Descriptions.Item label="เบอร์โทร">{formData.phone || '-'}</Descriptions.Item>
     <Descriptions.Item label="สถานที่สอบ">{formData.exam_date_province || '-'}</Descriptions.Item>
+    {/* แสดงวันที่สอบ ดักจับทั้งกรณีเป็น Dayjs object หรือสตริงปกติ หรือไม่มีข้อมูล */}
+    <Descriptions.Item label="วันที่สอบ">
+      {formData.exam_date && typeof formData.exam_date.format === 'function'
+        ? formData.exam_date.format('DD/MM/YYYY')
+        : (formData.exam_date || '-')}
+    </Descriptions.Item>
     <Descriptions.Item label="ไซส์ เสื้อ/กางเกง/รองเท้า">{`${formData.shirt_size || '-'} / ${formData.pants_size || '-'} / ${formData.shoe_size || '-'}`}</Descriptions.Item>
     <Descriptions.Item label="การเงิน">{formData.financial_ready || '-'}</Descriptions.Item>
     <Descriptions.Item label="ส่วนสูง/น้ำหนัก/อายุ">{`${formData.height || '-'} ซม. / ${formData.weight || '-'} กก. / ${formData.age || '-'} ปี`}</Descriptions.Item>
