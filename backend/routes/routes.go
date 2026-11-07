@@ -19,6 +19,8 @@ func SetupRoutes(app *fiber.App) {
 
 	// Admin Auth routes
 	api.Post("/admin/login", controllers.AdminLogin)
+	api.Post("/admin/2fa/setup", controllers.Setup2FA)
+	api.Post("/admin/2fa/verify", controllers.Verify2FA)
 
 	// Protected Admin routes
 	admin := api.Group("", middleware.Protected())
@@ -26,4 +28,11 @@ func SetupRoutes(app *fiber.App) {
 	admin.Get("/applicants", controllers.GetAllApplicants)
 	admin.Post("/applicants/:id_card/send-line", controllers.SendLineNotification)
 	admin.Get("/line/quota", controllers.GetQuota)
+
+	// Admin Users Management routes
+	admin.Get("/admins", controllers.GetAllAdmins)
+	admin.Post("/admins", controllers.CreateAdmin)
+	admin.Put("/admins/:id", controllers.UpdateAdmin)
+	admin.Delete("/admins/:id", controllers.DeleteAdmin)
+	admin.Post("/admins/:id/reset-2fa", controllers.ResetAdmin2FA)
 }

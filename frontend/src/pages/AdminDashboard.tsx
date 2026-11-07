@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Layout, Typography, Table, Button, Modal, message, Card, Space, Row, Col, Progress, Input, Segmented, DatePicker, Tag, Tooltip, Pagination } from 'antd';
-import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined, LogoutOutlined, CopyOutlined, ReloadOutlined, DownloadOutlined } from '@ant-design/icons';
+import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined, LogoutOutlined, CopyOutlined, ReloadOutlined, DownloadOutlined, TeamOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { useNavigate } from 'react-router-dom';
@@ -734,16 +734,27 @@ const AdminDashboard: React.FC = () => {
         <Title level={4} style={{ color: '#1f1f1f', margin: 0, fontWeight: 600, fontSize: isMobile ? 15 : 18 }}>
           {isMobile ? 'HR Recruitment' : 'ระบบจัดการข้อมูลผู้สมัคร (HR Recruitment)'}
         </Title>
-        <Button
-          type="text"
-          danger
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          size={isMobile ? 'small' : 'middle'}
-          style={{ fontWeight: 500 }}
-        >
-          {isMobile ? 'ออก' : 'ออกจากระบบ'}
-        </Button>
+        <Space size={8}>
+          <Button
+            type="default"
+            icon={<TeamOutlined />}
+            onClick={() => navigate('/admin/users')}
+            size={isMobile ? 'small' : 'middle'}
+            style={{ borderRadius: 6, fontWeight: 500 }}
+          >
+            {isMobile ? 'Admin' : 'จัดการผู้ดูแลระบบ'}
+          </Button>
+          <Button
+            type="text"
+            danger
+            icon={<LogoutOutlined />}
+            onClick={handleLogout}
+            size={isMobile ? 'small' : 'middle'}
+            style={{ fontWeight: 500 }}
+          >
+            {isMobile ? 'ออก' : 'ออกจากระบบ'}
+          </Button>
+        </Space>
       </Header>
       
       <Content style={{ padding: isMobile ? '12px' : '20px 24px' }}>

@@ -43,10 +43,14 @@ func Protected() fiber.Handler {
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
-		if ok {
-			c.Locals("admin_id", claims["admin_id"])
-			c.Locals("username", claims["username"])
+		if !ok || claims["purpose"] == "2fa_pending" {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"error": "Unauthorized: 2FA verification required",
+			})
 		}
+
+		c.Locals("admin_id", claims["admin_id"])
+		c.Locals("username", claims["username"])
 
 		return c.Next()
 	}
