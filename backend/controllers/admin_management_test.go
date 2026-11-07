@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jirayusmmmm/form-regis/backend/middleware"
 )
 
 func TestAdminManagement_Validation(t *testing.T) {
@@ -117,5 +118,45 @@ func TestDeleteAdmin_SelfDeletionProtection(t *testing.T) {
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("Expected self deletion to return 400 Bad Request, got status %d", resp.StatusCode)
+	}
+}
+
+// Test Authorization Middleware: Only Admin ID = 2 can access
+func TestRequireAdminID_Authorization(t *testing.T) {
+	app := fiber.New()
+
+	// Route protected with RequireAdminID(2)
+	app.Get("/api/admins", func(c *fiber.Ctx) error {
+		mockID := c.Get("X-Mock-Admin-ID")
+		if mockID == "2" {
+			c.Locals("admin_id", uint(2))
+		} else {
+			c.Locals("admin_id", uint(1))
+		}
+		return c.Next()
+	}, middleware.RequireAdminID(2), func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{"status": "ok"})
+	})
+
+	// Scenario 1: Unauthorized Admin (ID = 1) -> 403 Forbidden
+	req1 := httptest.NewRequest("GET", "/api/admins", nil)
+	req1.Header.Set("X-Mock-Admin-ID", "1")
+	resp1, err := app.Test(req1, -1)
+	if err != nil {
+		t.Fatalf("Request error: %v", err)
+	}
+	if resp1.StatusCode != http.StatusForbidden {
+		t.Errorf("Expected 403 Forbidden for admin ID 1, got %d", resp1.StatusCode)
+	}
+
+	// Scenario 2: Authorized Admin (ID = 2) -> 200 OK
+	req2 := httptest.NewRequest("GET", "/api/admins", nil)
+	req2.Header.Set("X-Mock-Admin-ID", "2")
+	resp2, err := app.Test(req2, -1)
+	if err != nil {
+		t.Fatalf("Request error: %v", err)
+	}
+	if resp2.StatusCode != http.StatusOK {
+		t.Errorf("Expected 200 OK for admin ID 2, got %d", resp2.StatusCode)
 	}
 }

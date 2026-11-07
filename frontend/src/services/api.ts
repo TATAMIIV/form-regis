@@ -83,7 +83,21 @@ export const adminAuthService = {
   },
 
   isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('admin_token');
+    const token = localStorage.getItem('admin_token');
+    if (!token) return false;
+    try {
+      const payloadBase64 = token.split('.')[1];
+      if (!payloadBase64) return false;
+      const decoded = JSON.parse(atob(payloadBase64));
+      // ตรวจสอบวันหมดอายุของ Token (8 ชั่วโมง) หากหมดอายุให้เคลียร์ session ทันที
+      if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+        adminAuthService.logout();
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   getMe: async (): Promise<AdminUserData> => {

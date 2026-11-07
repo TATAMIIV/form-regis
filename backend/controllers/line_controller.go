@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/jirayusmmmm/form-regis/backend/repositories"
 	"github.com/jirayusmmmm/form-regis/backend/services"
@@ -11,15 +13,21 @@ func SendLineNotification(c *fiber.Ctx) error {
 	
 	applicant, err := services.GetApplicantByIDCard(idCard)
 	if err != nil {
-		return c.Status(404).JSON(fiber.Map{"error": "Applicant not found"})
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Applicant not found"})
 	}
 
 	if err := services.SendLineNotification(&applicant); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		log.Printf("Internal error in SendLineNotification: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to send LINE notification",
+		})
 	}
 
 	if err := repositories.UpdateLineSentStatus(idCard); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to update status"})
+		log.Printf("Internal error in UpdateLineSentStatus: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update notification status",
+		})
 	}
 
 	return c.JSON(fiber.Map{"message": "Line notification sent successfully"})
@@ -28,7 +36,10 @@ func SendLineNotification(c *fiber.Ctx) error {
 func GetQuota(c *fiber.Ctx) error {
 	quota, err := services.GetLineQuota()
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		log.Printf("Internal error in GetQuota: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to fetch LINE quota",
+		})
 	}
 	return c.JSON(quota)
 }

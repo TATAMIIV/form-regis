@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Layout, Typography, Table, Button, Modal, message, Card, Space, Row, Col, Progress, Input, Segmented, DatePicker, Tag, Tooltip, Pagination } from 'antd';
+import { Layout, Typography, Table, Button, Modal, message, Card, Space, Row, Col, Progress, Input, Segmented, DatePicker, Tag, Tooltip, Pagination, Popconfirm } from 'antd';
 import { EyeOutlined, MessageOutlined, CheckCircleOutlined, SearchOutlined, EditOutlined, LogoutOutlined, CopyOutlined, ReloadOutlined, DownloadOutlined, TeamOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 dayjs.extend(isBetween);
 import { applicantService, adminAuthService } from '../services/api';
+import type { AdminUserData } from '../services/api';
 import type { ApplicantData } from '../types/applicant';
 import ReviewStep from '../components/Form/ReviewStep';
 import EditApplicantDrawer from '../components/Form/EditApplicantDrawer';
@@ -48,11 +49,22 @@ const AdminDashboard: React.FC = () => {
   // Edit Drawer
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [editingApplicant, setEditingApplicant] = useState<ApplicantData | null>(null);
+  const [currentAdmin, setCurrentAdmin] = useState<AdminUserData | null>(null);
 
   useEffect(() => {
     fetchApplicants();
     fetchQuota();
+    fetchCurrentAdmin();
   }, []);
+
+  const fetchCurrentAdmin = async () => {
+    try {
+      const data = await adminAuthService.getMe();
+      setCurrentAdmin(data);
+    } catch {
+      // Ignored
+    }
+  };
 
   const fetchQuota = async () => {
     try {
@@ -735,25 +747,35 @@ const AdminDashboard: React.FC = () => {
           {isMobile ? 'HR Recruitment' : 'ระบบจัดการข้อมูลผู้สมัคร (HR Recruitment)'}
         </Title>
         <Space size={8}>
-          <Button
-            type="default"
-            icon={<TeamOutlined />}
-            onClick={() => navigate('/admin/users')}
-            size={isMobile ? 'small' : 'middle'}
-            style={{ borderRadius: 6, fontWeight: 500 }}
+          {currentAdmin?.id === 2 && (
+            <Button
+              type="default"
+              icon={<TeamOutlined />}
+              onClick={() => navigate('/admin/users')}
+              size={isMobile ? 'small' : 'middle'}
+              style={{ borderRadius: 6, fontWeight: 500 }}
+            >
+              {isMobile ? 'Admin' : 'จัดการผู้ดูแลระบบ'}
+            </Button>
+          )}
+          <Popconfirm
+            title="ยืนยันการออกจากระบบ"
+            description="คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?"
+            onConfirm={handleLogout}
+            okText="ออกจากระบบ"
+            cancelText="ยกเลิก"
+            okButtonProps={{ danger: true }}
           >
-            {isMobile ? 'Admin' : 'จัดการผู้ดูแลระบบ'}
-          </Button>
-          <Button
-            type="text"
-            danger
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            size={isMobile ? 'small' : 'middle'}
-            style={{ fontWeight: 500 }}
-          >
-            {isMobile ? 'ออก' : 'ออกจากระบบ'}
-          </Button>
+            <Button
+              type="text"
+              danger
+              icon={<LogoutOutlined />}
+              size={isMobile ? 'small' : 'middle'}
+              style={{ fontWeight: 500 }}
+            >
+              {isMobile ? 'ออก' : 'ออกจากระบบ'}
+            </Button>
+          </Popconfirm>
         </Space>
       </Header>
       

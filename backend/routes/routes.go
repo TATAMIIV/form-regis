@@ -29,10 +29,11 @@ func SetupRoutes(app *fiber.App) {
 	admin.Post("/applicants/:id_card/send-line", controllers.SendLineNotification)
 	admin.Get("/line/quota", controllers.GetQuota)
 
-	// Admin Users Management routes
-	admin.Get("/admins", controllers.GetAllAdmins)
-	admin.Post("/admins", controllers.CreateAdmin)
-	admin.Put("/admins/:id", controllers.UpdateAdmin)
-	admin.Delete("/admins/:id", controllers.DeleteAdmin)
-	admin.Post("/admins/:id/reset-2fa", controllers.ResetAdmin2FA)
+	// Admin Users Management routes (Only Admin ID = 2)
+	superAdmin := admin.Group("", middleware.RequireAdminID(2))
+	superAdmin.Get("/admins", controllers.GetAllAdmins)
+	superAdmin.Post("/admins", controllers.CreateAdmin)
+	superAdmin.Put("/admins/:id", controllers.UpdateAdmin)
+	superAdmin.Delete("/admins/:id", controllers.DeleteAdmin)
+	superAdmin.Post("/admins/:id/reset-2fa", controllers.ResetAdmin2FA)
 }

@@ -26,6 +26,11 @@ func Protected() fiber.Handler {
 
 		jwtSecret := os.Getenv("JWT_SECRET")
 		if jwtSecret == "" {
+			if os.Getenv("APP_ENV") == "production" {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "Server security configuration error",
+				})
+			}
 			jwtSecret = "form-regis-default-jwt-secret-key"
 		}
 
@@ -51,6 +56,30 @@ func Protected() fiber.Handler {
 
 		c.Locals("admin_id", claims["admin_id"])
 		c.Locals("username", claims["username"])
+
+		return c.Next()
+	}
+}
+
+// RequireAdminID restricts access to a specific admin ID (e.g. ID = 2 for SuperAdmin)
+func RequireAdminID(allowedID uint) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		adminIDVal := c.Locals("admin_id")
+		var adminID uint
+		switch v := adminIDVal.(type) {
+		case float64:
+			adminID = uint(v)
+		case int:
+			adminID = uint(v)
+		case uint:
+			adminID = v
+		}
+
+		if adminID != allowedID {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"error": "Forbidden: เข้าถึงได้เฉพาะผู้ดูแลระบบหลัก (ID: 2) เท่านั้น",
+			})
+		}
 
 		return c.Next()
 	}

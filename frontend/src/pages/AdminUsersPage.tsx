@@ -75,6 +75,10 @@ export const AdminUsersPage: React.FC = () => {
     try {
       const data = await adminAuthService.getMe();
       setCurrentAdmin(data);
+      if (data.id !== 2) {
+        message.error('คุณไม่มีสิทธิ์เข้าถึงหน้านี้ อนุญาตเฉพาะผู้ดูแลระบบหลัก (ID: 2) เท่านั้น');
+        navigate('/admin', { replace: true });
+      }
     } catch {
       // Handled by ProtectedRoute
     }
@@ -372,16 +376,24 @@ export const AdminUsersPage: React.FC = () => {
           </Title>
         </Space>
 
-        <Button
-          type="text"
-          danger
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          size={isMobile ? 'small' : 'middle'}
-          style={{ fontWeight: 500 }}
+        <Popconfirm
+          title="ยืนยันการออกจากระบบ"
+          description="คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ?"
+          onConfirm={handleLogout}
+          okText="ออกจากระบบ"
+          cancelText="ยกเลิก"
+          okButtonProps={{ danger: true }}
         >
-          {isMobile ? 'ออก' : 'ออกจากระบบ'}
-        </Button>
+          <Button
+            type="text"
+            danger
+            icon={<LogoutOutlined />}
+            size={isMobile ? 'small' : 'middle'}
+            style={{ fontWeight: 500 }}
+          >
+            {isMobile ? 'ออก' : 'ออกจากระบบ'}
+          </Button>
+        </Popconfirm>
       </Header>
 
       {/* MAIN CONTENT */}

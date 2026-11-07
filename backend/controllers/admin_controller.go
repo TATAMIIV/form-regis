@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -33,6 +34,9 @@ type Verify2FAInput struct {
 func getJWTSecret() string {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
+		if os.Getenv("APP_ENV") == "production" {
+			log.Fatal("CRITICAL SECURITY ERROR: JWT_SECRET environment variable is missing in production")
+		}
 		jwtSecret = "form-regis-default-jwt-secret-key"
 	}
 	return jwtSecret
@@ -44,7 +48,7 @@ func generateAdminToken(admin *models.Admin) (string, error) {
 		"username": admin.Username,
 		"name":     admin.Name,
 		"role":     "admin",
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
+		"exp":      time.Now().Add(time.Hour * 8).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

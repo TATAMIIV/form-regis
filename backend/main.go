@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jirayusmmmm/form-regis/backend/config"
@@ -21,14 +22,20 @@ func main() {
 
 	config.ConnectDB()
 
-	app := fiber.New()
+	// Initialize Fiber app with disabled Server header to prevent technology fingerprinting
+	app := fiber.New(fiber.Config{
+		ServerHeader: "",
+	})
 
-	// Recover Middleware to catch panics
+	// Security: Recover Middleware to catch panics
 	app.Use(recover.New())
+
+	// Security: Helmet middleware for essential security headers
+	app.Use(helmet.New())
 
 	allowedOrigin := os.Getenv("ALLOWED_ORIGIN")
 	if allowedOrigin == "" {
-		allowedOrigin = "*"
+		allowedOrigin = "http://localhost:5173"
 	}
 
 	app.Use(cors.New(cors.Config{
